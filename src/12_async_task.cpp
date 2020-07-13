@@ -7,12 +7,13 @@
 using namespace std;
 
 static const int MAX = 10e8;
-static double sum = 0;
 
-void worker(int min, int max) {
+double worker(int min, int max) {
+  double sum = 0;
   for (int i = min; i <= max; i++) {
     sum += sqrt(i);
   }
+  return sum;
 }
 
 class Worker {
@@ -36,11 +37,11 @@ private:
 };
 
 int main() {
-  sum = 0;
-  auto f1 = async(worker, 0, MAX);
+
+  future<double> f1 = async(worker, 0, MAX);
   cout << "Async task triggered" << endl;
-  f1.wait();
-  cout << "Async task finish, result: " << sum << endl << endl;
+  //get()等待线程结束并返回结果，会阻塞
+  cout << "Async task finish, result: " << f1.get() << endl << endl;
 
   double result = 0;
   cout << "Async task with lambda triggered, thread: " << this_thread::get_id() << endl;
@@ -50,7 +51,7 @@ int main() {
       result += sqrt(i);
     }
   });
-  f2.wait();
+  f2.wait();//等待线程结束，但是不返回结果
   cout << "Async task with lambda finish, result: " << result << endl << endl;
 
   Worker w(0, MAX);

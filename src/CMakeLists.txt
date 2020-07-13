@@ -21,6 +21,10 @@ add_executable(bank_transfer_wait_notify  11_bank_transfer_wait_notify.cpp)
 add_executable(async_task                 12_async_task.cpp)
 add_executable(packaged_task              13_packaged_task.cpp)
 add_executable(promise_future             14_promise_future.cpp)
+add_executable(lock_guard                 lock_guard.cpp)
+#add_executable(consumer_producer          consumer_producer.cpp)
+add_executable(consumer_producer_cpp11    consumer_producer_cpp11.cpp)
+
 
 # For OS X
 if(APPLE)
