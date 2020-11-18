@@ -1,114 +1,104 @@
-#include <pthread.h>
 #include <errno.h>
-#include <unistd.h>
-#include <list>
+#include <pthread.h>
 #include <semaphore.h>
+#include <unistd.h>
+
 #include <iostream>
+#include <list>
 
 using namespace std;
 
-class Task
-{
-public:
-    Task(int taskID)
-    {
-        this->taskID = taskID;
-    }
+class Task {
+ public:
+  Task(int taskID) { this->taskID = taskID; }
 
-    void doTask()
-    {
-        cout << "handle a task, taskID: " << taskID << ", threadID: " << pthread_self() << endl; 
-    }
+  void doTask() {
+    cout << "handle a task, taskID: " << taskID
+         << ", threadID: " << pthread_self() << endl;
+  }
 
-private:
-    int taskID;
+ private:
+  int taskID;
 };
 
-pthread_mutex_t  mymutex;
+pthread_mutex_t mymutex;
 list<Task*> tasks;
-pthread_cond_t   mycv;
+pthread_cond_t mycv;
 
-void* consumer_thread(void* param)
-{    
-    Task* pTask = NULL;
-    while (true)
-    {
-        pthread_mutex_lock(&mymutex);
-        while (tasks.empty())
-        {               
-            //如果获得了互斥锁，但是条件不合适的话，pthread_cond_wait 会释放锁，不往下执行
-            //当发生变化后，条件合适，pthread_cond_wait 将直接获得锁
-            pthread_cond_wait(&mycv, &mymutex);
-        }
-
-        pTask = tasks.front();
-        tasks.pop_front();
-
-        pthread_mutex_unlock(&mymutex);
-
-        if (pTask == NULL)
-            continue;
-
-        pTask->doTask();
-        delete pTask;
-        pTask = NULL;       
+void* consumer_thread(void* param) {
+  Task* pTask = NULL;
+  while (true) {
+    pthread_mutex_lock(&mymutex);
+    while (tasks.empty()) {
+      //如果获得了互斥锁，但是条件不合适的话，pthread_cond_wait
+      //会释放锁，不往下执行 当发生变化后，条件合适，pthread_cond_wait
+      //将直接获得锁
+      pthread_cond_wait(&mycv, &mymutex);
     }
 
-    return NULL;
+    pTask = tasks.front();
+    tasks.pop_front();
+
+    pthread_mutex_unlock(&mymutex);
+
+    if (pTask == NULL) continue;
+
+    pTask->doTask();
+    delete pTask;
+    pTask = NULL;
+  }
+
+  return NULL;
 }
 
-void* producer_thread(void* param)
-{
-    int taskID = 0;
-    Task* pTask = NULL;
+void* producer_thread(void* param) {
+  int taskID = 0;
+  Task* pTask = NULL;
 
-    while (true)
-    {
-        pTask = new Task(taskID);
+  while (true) {
+    pTask = new Task(taskID);
 
-        pthread_mutex_lock(&mymutex);
-        tasks.push_back(pTask);
-        cout << "produce a task, taskID: " << taskID << ", threadID: " << pthread_self() << endl; 
+    pthread_mutex_lock(&mymutex);
+    tasks.push_back(pTask);
+    cout << "produce a task, taskID: " << taskID
+         << ", threadID: " << pthread_self() << endl;
 
-        pthread_mutex_unlock(&mymutex);
+    pthread_mutex_unlock(&mymutex);
 
-        //释放互斥锁，通知消费者线程
-        pthread_cond_signal(&mycv);
+    //释放互斥锁，通知消费者线程
+    pthread_cond_signal(&mycv);
 
-        taskID ++;
+    taskID++;
 
-        //休眠1秒
-        sleep(1);
-    }
+    //休眠1秒
+    sleep(1);
+  }
 
-    return NULL;
+  return NULL;
 }
 
-int main()
-{
-    pthread_mutex_init(&mymutex, NULL);
-    pthread_cond_init(&mycv, NULL);
+int main() {
+  pthread_mutex_init(&mymutex, NULL);
+  pthread_cond_init(&mycv, NULL);
 
-    //创建 5 个消费者线程
-    pthread_t consumerThreadID[5];
-    for (int i = 0; i < 5; ++i)
-    {
-        pthread_create(&consumerThreadID[i], NULL, consumer_thread, NULL);
-    }
+  //创建 5 个消费者线程
+  pthread_t consumerThreadID[5];
+  for (int i = 0; i < 5; ++i) {
+    pthread_create(&consumerThreadID[i], NULL, consumer_thread, NULL);
+  }
 
-    //创建一个生产者线程
-    pthread_t producerThreadID;
-    pthread_create(&producerThreadID, NULL, producer_thread, NULL);
+  //创建一个生产者线程
+  pthread_t producerThreadID;
+  pthread_create(&producerThreadID, NULL, producer_thread, NULL);
 
-    pthread_join(producerThreadID, NULL);
+  pthread_join(producerThreadID, NULL);
 
-    for (int i = 0; i < 5; ++i)
-    {
-        pthread_join(consumerThreadID[i], NULL);
-    }
+  for (int i = 0; i < 5; ++i) {
+    pthread_join(consumerThreadID[i], NULL);
+  }
 
-    pthread_cond_destroy(&mycv);
-    pthread_mutex_destroy(&mymutex);
+  pthread_cond_destroy(&mycv);
+  pthread_mutex_destroy(&mymutex);
 
-    return 0;
+  return 0;
 }

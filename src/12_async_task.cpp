@@ -1,5 +1,5 @@
-#include <cmath>
 #include <chrono>
+#include <cmath>
 #include <future>
 #include <iostream>
 #include <thread>
@@ -17,8 +17,8 @@ double worker(int min, int max) {
 }
 
 class Worker {
-public:
-  Worker(int min, int max): mMin(min), mMax(max) {}
+ public:
+  Worker(int min, int max) : mMin(min), mMax(max) {}
   double work() {
     mResult = 0;
     for (int i = mMin; i <= mMax; i++) {
@@ -26,32 +26,30 @@ public:
     }
     return mResult;
   }
-  double getResult() {
-    return mResult;
-  }
+  double getResult() { return mResult; }
 
-private:
+ private:
   int mMin;
   int mMax;
   double mResult;
 };
 
 int main() {
-
   future<double> f1 = async(worker, 0, MAX);
   cout << "Async task triggered" << endl;
-  //get()等待线程结束并返回结果，会阻塞
+  // get()等待线程结束并返回结果，会阻塞
   cout << "Async task finish, result: " << f1.get() << endl << endl;
 
   double result = 0;
-  cout << "Async task with lambda triggered, thread: " << this_thread::get_id() << endl;
+  cout << "Async task with lambda triggered, thread: " << this_thread::get_id()
+       << endl;
   auto f2 = async(launch::async, [&result]() {
     cout << "Lambda task in thread: " << this_thread::get_id() << endl;
     for (int i = 0; i <= MAX; i++) {
       result += sqrt(i);
     }
   });
-  f2.wait();//等待线程结束，但是不返回结果
+  f2.wait();  //等待线程结束，但是不返回结果
   cout << "Async task with lambda finish, result: " << result << endl << endl;
 
   Worker w(0, MAX);

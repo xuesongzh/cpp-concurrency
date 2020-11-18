@@ -7,28 +7,22 @@
 using namespace std;
 
 class Account {
-public:
-  Account(string name, double money): mName(name), mMoney(money) {};
+ public:
+  Account(string name, double money) : mName(name), mMoney(money){};
 
-public:
+ public:
   void changeMoney(double amount) {
     unique_lock lock(mMoneyLock);
-    mConditionVar.wait(lock, [this, amount] {
-      return mMoney + amount > 0;
-    });
+    mConditionVar.wait(lock, [this, amount] { return mMoney + amount > 0; });
     mMoney += amount;
     mConditionVar.notify_all();
   }
 
-  string getName() {
-    return mName;
-  }
+  string getName() { return mName; }
 
-  double getMoney() {
-    return mMoney;
-  }
+  double getMoney() { return mMoney; }
 
-private:
+ private:
   string mName;
   double mMoney;
   mutex mMoneyLock;
@@ -36,10 +30,8 @@ private:
 };
 
 class Bank {
-public:
-  void addAccount(Account* account) {
-    mAccounts.insert(account);
-  }
+ public:
+  void addAccount(Account* account) { mAccounts.insert(account); }
 
   void transferMoney(Account* accountA, Account* accountB, double amount) {
     accountA->changeMoney(-amount);
@@ -54,19 +46,19 @@ public:
     return sum;
   }
 
-private:
+ private:
   set<Account*> mAccounts;
 };
 
 mutex sCoutLock;
 void randomTransfer(Bank* bank, Account* accountA, Account* accountB) {
-  while(true) {
+  while (true) {
     double randomMoney = ((double)rand() / RAND_MAX) * 100;
     {
       lock_guard guard(sCoutLock);
-      cout << "Try to Transfer " << randomMoney
-           << " from " << accountA->getName() << "(" << accountA->getMoney()
-           << ") to " << accountB->getName() << "(" << accountB->getMoney()
+      cout << "Try to Transfer " << randomMoney << " from "
+           << accountA->getName() << "(" << accountA->getMoney() << ") to "
+           << accountB->getName() << "(" << accountB->getMoney()
            << "), Bank totalMoney: " << bank->totalMoney() << endl;
     }
     bank->transferMoney(accountA, accountB, randomMoney);

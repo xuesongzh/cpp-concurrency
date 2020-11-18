@@ -48,7 +48,8 @@ int main() {
   concurrent_task(0, MAX, &sum);
 
   auto end_time = chrono::steady_clock::now();
-  auto ms = chrono::duration_cast<chrono::milliseconds>(end_time - start_time).count();
+  auto ms = chrono::duration_cast<chrono::milliseconds>(end_time - start_time)
+                .count();
   cout << "Concurrent task finish, " << ms << " ms consumed." << endl;
   cout << "Result: " << sum.get_future().get() << endl;
   return 0;

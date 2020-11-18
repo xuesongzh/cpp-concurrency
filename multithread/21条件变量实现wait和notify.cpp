@@ -1,4 +1,4 @@
-#include <condition_variable>  //需要包含这个，否则会报错类型不完整
+#include <condition_variable>
 #include <iostream>
 #include <list>
 #include <mutex>
@@ -52,7 +52,7 @@ class A {
           return true;
         }
         return false;
-      });
+      });  // lambda处理了虚假唤醒
       command = msgRecvQueue.front();
       msgRecvQueue.pop_front();
       lock.unlock();  //因为unique_lock的灵活性，可以随时解锁
@@ -68,11 +68,11 @@ class A {
      *
      * 如果第二个返回值是true，那么wait直接返回
      *
-     * 当其他线程使用notefy_one()唤醒wait
+     * 当其他线程使用notify_one()唤醒wait
      * 1）再次尝试获取互斥量锁，如果获取不到线程阻塞这里等待获取，如果获取到锁，wait就加锁
      * 2）如果wait有第二个参数（lambda），就判断这个表达式，
      *   如果表达式为false，就解锁重新进入睡眠，等待再次被notefy_one()唤醒
-     *	 如果表示式为true，那么流程直接走下来。此时互斥锁还是锁着。
+     *	 如果表达式为true，那么流程直接走下来。此时互斥锁还是锁着。
      *	 流程只要能走到这里互斥锁一定是锁着的。
      *
      *	如果wait没有第二个参数无条件向下走。
@@ -83,8 +83,7 @@ class A {
  private:
   list<int> msgRecvQueue;      //容器用来存放玩家发送过来的命令
   std::mutex mtx;              //创建一个互斥量的成员变量
-  std::condition_variable cv;  // 2017可以不适用()
-  //生成一个条件对象
+  std::condition_variable cv;  //生成一个条件对象
 };
 
 int main(void) {

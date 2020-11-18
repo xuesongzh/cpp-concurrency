@@ -1,5 +1,5 @@
-#include <cmath>
 #include <chrono>
+#include <cmath>
 #include <iostream>
 #include <thread>
 #include <vector>
@@ -20,8 +20,10 @@ void serial_task(int min, int max) {
   sum = 0;
   worker(0, MAX);
   auto end_time = chrono::steady_clock::now();
-  auto ms = chrono::duration_cast<chrono::milliseconds>(end_time - start_time).count();
-  cout << "Serail task finish, " << ms << " ms consumed, Result: " << sum << endl;
+  auto ms = chrono::duration_cast<chrono::milliseconds>(end_time - start_time)
+                .count();
+  cout << "Serail task finish, " << ms << " ms consumed, Result: " << sum
+       << endl;
 }
 
 void concurrent_task(int min, int max) {
@@ -29,7 +31,7 @@ void concurrent_task(int min, int max) {
 
   unsigned concurrent_count = thread::hardware_concurrency();
   cout << "hardware_concurrency: " << concurrent_count << endl;
-  vector<thread> threads; 
+  vector<thread> threads;
   min = 0;
   sum = 0;
   for (int t = 0; t < concurrent_count; t++) {
@@ -42,8 +44,10 @@ void concurrent_task(int min, int max) {
   }
 
   auto end_time = chrono::steady_clock::now();
-  auto ms = chrono::duration_cast<chrono::milliseconds>(end_time - start_time).count();
-  cout << "Concurrent task finish, " << ms << " ms consumed, Result: " << sum << endl;
+  auto ms = chrono::duration_cast<chrono::milliseconds>(end_time - start_time)
+                .count();
+  cout << "Concurrent task finish, " << ms << " ms consumed, Result: " << sum
+       << endl;
 }
 
 int main() {
