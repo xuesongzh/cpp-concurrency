@@ -6,24 +6,34 @@
 using namespace std;
 
 class Account {
-  public:
+ public:
     Account(string name, double money) : mName(name), mMoney(money){};
 
-  public:
-    void changeMoney(double amount) { mMoney += amount; }
-    string getName() { return mName; }
-    double getMoney() { return mMoney; }
-    mutex* getLock() { return &mMoneyLock; }
+ public:
+    void changeMoney(double amount) {
+        mMoney += amount;
+    }
+    string getName() {
+        return mName;
+    }
+    double getMoney() {
+        return mMoney;
+    }
+    mutex* getLock() {
+        return &mMoneyLock;
+    }
 
-  private:
+ private:
     string mName;
     double mMoney;
     mutex mMoneyLock;
 };
 
 class Bank {
-  public:
-    void addAccount(Account* account) { mAccounts.insert(account); }
+ public:
+    void addAccount(Account* account) {
+        mAccounts.insert(account);
+    }
 
     bool transferMoney(Account* accountA, Account* accountB, double amount) {
         lock_guard guardA(*accountA->getLock());
@@ -46,7 +56,7 @@ class Bank {
         return sum;
     }
 
-  private:
+ private:
     set<Account*> mAccounts;
 };
 
@@ -54,13 +64,11 @@ void randomTransfer(Bank* bank, Account* accountA, Account* accountB) {
     while (true) {
         double randomMoney = ((double)rand() / RAND_MAX) * 100;
         if (bank->transferMoney(accountA, accountB, randomMoney)) {
-            cout << "Transfer " << randomMoney << " from " << accountA->getName()
-                 << " to " << accountB->getName()
+            cout << "Transfer " << randomMoney << " from " << accountA->getName() << " to " << accountB->getName()
                  << ", Bank totalMoney: " << bank->totalMoney() << endl;
         } else {
-            cout << "Transfer failed, " << accountA->getName() << " has only $"
-                 << accountA->getMoney() << ", but " << randomMoney << " required"
-                 << endl;
+            cout << "Transfer failed, " << accountA->getName() << " has only $" << accountA->getMoney() << ", but "
+                 << randomMoney << " required" << endl;
         }
     }
 }

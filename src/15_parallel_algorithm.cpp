@@ -27,8 +27,7 @@ int main() {
     auto time1 = chrono::steady_clock::now();
     sort(execution::seq, copy1.begin(), copy1.end());
     auto time2 = chrono::steady_clock::now();
-    auto duration =
-        chrono::duration_cast<chrono::milliseconds>(time2 - time1).count();
+    auto duration = chrono::duration_cast<chrono::milliseconds>(time2 - time1).count();
     cout << "Sequenced sort consuming " << duration << "ms." << endl;
 
     auto time3 = chrono::steady_clock::now();

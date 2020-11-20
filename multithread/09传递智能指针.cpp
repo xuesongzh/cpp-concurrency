@@ -8,18 +8,18 @@ using namespace std;
 void MyPrint2(unique_ptr<int> pn)
 
 {
-  cout << "thread is:" << this_thread::get_id() << endl;
+    cout << "thread is:" << this_thread::get_id() << endl;
 }
 
 int main(void) {
-  unique_ptr<int> myp(new int(100));
-  //智能指针转移使用move
-  thread mythread(MyPrint2, std::move(myp));
-  mythread.join();
-  // mythread.detach();
+    unique_ptr<int> myp(new int(100));
+    //智能指针转移使用move
+    thread mythread(MyPrint2, std::move(myp));
+    mythread.join();
+    // mythread.detach();
 
-  system("pause");
-  return 0;
+    system("pause");
+    return 0;
 }
 
 /*

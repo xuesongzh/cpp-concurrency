@@ -7,15 +7,16 @@
 using namespace std;
 
 class Task {
-  public:
-    Task(int taskID) { this->taskID = taskID; }
-
-    void doTask() {
-        cout << "handle a task, taskID: " << taskID
-             << ", threadID: " << this_thread::get_id() << endl;
+ public:
+    Task(int taskID) {
+        this->taskID = taskID;
     }
 
-  private:
+    void doTask() {
+        cout << "handle a task, taskID: " << taskID << ", threadID: " << this_thread::get_id() << endl;
+    }
+
+ private:
     int taskID;
 };
 
@@ -55,8 +56,7 @@ void producer_thread() {
         {
             lock_guard<mutex> lock(mtx);
             tasks.push(pTask);
-            cout << "produce a task, taskID: " << taskID
-                 << ", threadID: " << this_thread::get_id() << endl;
+            cout << "produce a task, taskID: " << taskID << ", threadID: " << this_thread::get_id() << endl;
         }
 
         //释放互斥锁，通知消费者线程

@@ -9,7 +9,9 @@ void init() {
     // Do something...
 }
 
-void worker(once_flag* flag) { call_once(*flag, init); }
+void worker(once_flag* flag) {
+    call_once(*flag, init);
+}
 
 int main() {
     once_flag flag;

@@ -10,114 +10,114 @@ using namespace std;
 
 class A {
  public:
-  //通过函数返回一个unique_lock对象，实现所有权转移
-  unique_lock<mutex> rtn_unique_lock() {
-    unique_lock<mutex> tempLock(mtx);
-    return tempLock;  //从函数返回一个局部的unique_lock是可以的
-    //移动构造函数，系统临时生成一个临时对象。
-  }
-
-  //把收到的消息入到一个队列，子线程的启动函数
-  void inMsgRecvQueue() {
-    for (int i = 0; i < 10000; i++) {
-      cout << "inMsgQueue插入一个元素" << i << endl;
-
-      // adopt_lock:表示互斥量已经被lock了，互斥量必须在前面lock了，否则会报异常。
-      //调用方线程已经拥有了互斥量的所有权，不需要在构造函数中再次lock了。
-      mtx.lock();
-      unique_lock<mutex> lock1(mtx, adopt_lock);
-
-      // try_to_lock:是我们会尝试用mutex的lock()去锁定mutex，但是如果没有锁定成功，
-      //会立即返回，不会阻塞在那里。不能提前lock。
-      unique_lock<mutex> lock2(mtx, try_to_lock);
-      //如果拿到了锁
-      if (lock2.owns_lock()) {
-        msgRecvQueue.push_back(i);  //假设这个数字i就是收到的玩家的命令
-      } else {
-        cout << "没有拿到锁----------------------" << endl;
-      }
-
-      // default_lock:不能先lock住，就是没有给mutex加锁，初始化了一个没有加锁的mutex。
-      //可以灵活的调用一些unique_lock的成员函数。
-      unique_lock<mutex> lock3(mtx, defer_lock);
-      //没有加锁的mtx，加锁之后不用自己解锁
-      lock3.lock();
-      if (lock3.try_lock()) {  //尝试加锁，不成功也不阻塞
-        msgRecvQueue.push_back(i);
-      } else {
-        cout << "没有拿到锁----------------------" << endl;
-      }
-
-      // release解除unique_lock和mutex之间的关联
-      unique_lock<mutex> myGuard(mtx);
-      mutex* ptx = myGuard.release();
-      msgRecvQueue.push_back(i);
-      ptx->unlock();
-
-      //所有权转移
-      unique_lock<mutex> myGuard1(mtx);
-      //复制所有权是非法的
-      // unique_lock<mutex> myGuard2(myGuard1);
-      //移动语义，相当于myGuard2和mtx绑定到一起，myGuard1指向空，myGuard2指向了mtx
-      unique_lock<mutex> myGuard2(move(myGuard1));
-
-      mutex* ptx = myGuard2.release();
-      msgRecvQueue.push_back(i);
-      ptx->unlock();
-
-      // unique_lock<mutex> myGuard1 = rtn_unique_lock();
-    }
-  }
-  //读共享数据函数的封装函数
-  bool outMsgprocess(int& command) {
-    // lock_guard<mutex> myGuard1(mtx);
-    unique_lock<mutex> myGuard1(mtx);
-
-    //睡眠20s
-    /*chrono::milliseconds dura(20000);
-    this_thread::sleep_for(dura);*/
-
-    if (!msgRecvQueue.empty()) {
-      //消息队列不为空
-      command = msgRecvQueue.front();  //返回第一个元素
-      msgRecvQueue.pop_front();        //移除第一个元素
-      return true;
+    //通过函数返回一个unique_lock对象，实现所有权转移
+    unique_lock<mutex> rtn_unique_lock() {
+        unique_lock<mutex> tempLock(mtx);
+        return tempLock;  //从函数返回一个局部的unique_lock是可以的
+                          //移动构造函数，系统临时生成一个临时对象。
     }
 
-    return false;
-  }
+    //把收到的消息入到一个队列，子线程的启动函数
+    void inMsgRecvQueue() {
+        for (int i = 0; i < 10000; i++) {
+            cout << "inMsgQueue插入一个元素" << i << endl;
 
-  //把数据从消息队列中取出的子线程
-  void outMsgRecvQueue() {
-    int command = 0;
-    for (int i = 0; i < 10000; i++) {
-      bool result = outMsgprocess(command);
-      if (result == true) {
-        cout << "取消息函数执行成功" << command << endl;
-      } else {
-        cout << "消息队列中的消息为空" << i << endl;
-      }
+            // adopt_lock:表示互斥量已经被lock了，互斥量必须在前面lock了，否则会报异常。
+            //调用方线程已经拥有了互斥量的所有权，不需要在构造函数中再次lock了。
+            mtx.lock();
+            unique_lock<mutex> lock1(mtx, adopt_lock);
+
+            // try_to_lock:是我们会尝试用mutex的lock()去锁定mutex，但是如果没有锁定成功，
+            //会立即返回，不会阻塞在那里。不能提前lock。
+            unique_lock<mutex> lock2(mtx, try_to_lock);
+            //如果拿到了锁
+            if (lock2.owns_lock()) {
+                msgRecvQueue.push_back(i);  //假设这个数字i就是收到的玩家的命令
+            } else {
+                cout << "没有拿到锁----------------------" << endl;
+            }
+
+            // default_lock:不能先lock住，就是没有给mutex加锁，初始化了一个没有加锁的mutex。
+            //可以灵活的调用一些unique_lock的成员函数。
+            unique_lock<mutex> lock3(mtx, defer_lock);
+            //没有加锁的mtx，加锁之后不用自己解锁
+            lock3.lock();
+            if (lock3.try_lock()) {  //尝试加锁，不成功也不阻塞
+                msgRecvQueue.push_back(i);
+            } else {
+                cout << "没有拿到锁----------------------" << endl;
+            }
+
+            // release解除unique_lock和mutex之间的关联
+            unique_lock<mutex> myGuard(mtx);
+            mutex* ptx = myGuard.release();
+            msgRecvQueue.push_back(i);
+            ptx->unlock();
+
+            //所有权转移
+            unique_lock<mutex> myGuard1(mtx);
+            //复制所有权是非法的
+            // unique_lock<mutex> myGuard2(myGuard1);
+            //移动语义，相当于myGuard2和mtx绑定到一起，myGuard1指向空，myGuard2指向了mtx
+            unique_lock<mutex> myGuard2(move(myGuard1));
+
+            mutex* ptx = myGuard2.release();
+            msgRecvQueue.push_back(i);
+            ptx->unlock();
+
+            // unique_lock<mutex> myGuard1 = rtn_unique_lock();
+        }
+    }
+    //读共享数据函数的封装函数
+    bool outMsgprocess(int& command) {
+        // lock_guard<mutex> myGuard1(mtx);
+        unique_lock<mutex> myGuard1(mtx);
+
+        //睡眠20s
+        /*chrono::milliseconds dura(20000);
+        this_thread::sleep_for(dura);*/
+
+        if (!msgRecvQueue.empty()) {
+            //消息队列不为空
+            command = msgRecvQueue.front();  //返回第一个元素
+            msgRecvQueue.pop_front();        //移除第一个元素
+            return true;
+        }
+
+        return false;
     }
 
-    cout << endl;
-  }
+    //把数据从消息队列中取出的子线程
+    void outMsgRecvQueue() {
+        int command = 0;
+        for (int i = 0; i < 10000; i++) {
+            bool result = outMsgprocess(command);
+            if (result == true) {
+                cout << "取消息函数执行成功" << command << endl;
+            } else {
+                cout << "消息队列中的消息为空" << i << endl;
+            }
+        }
+
+        cout << endl;
+    }
 
  private:
-  list<int> msgRecvQueue;  //容器用来存放玩家发送过来的命令
-  //创建一个互斥量的成员变量
-  mutex mtx;
+    list<int> msgRecvQueue;  //容器用来存放玩家发送过来的命令
+    //创建一个互斥量的成员变量
+    mutex mtx;
 };
 
 int main(void) {
-  A myobj;
-  thread myOutMsgObj(&A::outMsgRecvQueue, &myobj);
-  thread myInMsObj(&A::inMsgRecvQueue, &myobj);
-  myOutMsgObj.join();
-  myInMsObj.join();
+    A myobj;
+    thread myOutMsgObj(&A::outMsgRecvQueue, &myobj);
+    thread myInMsObj(&A::inMsgRecvQueue, &myobj);
+    myOutMsgObj.join();
+    myInMsObj.join();
 
-  cout << "main线程" << endl;  //最后执行这一句，整个线程退出
-  system("pause");
-  return 0;
+    cout << "main线程" << endl;  //最后执行这一句，整个线程退出
+    system("pause");
+    return 0;
 }
 /*
  *一：unique_lock()取代lock_guard()

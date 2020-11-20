@@ -11,65 +11,67 @@ std::mutex resource_mutex;
 //单例类
 class MyCAS {
  private:
-  //构造函数私有化
-  MyCAS() {}
+    //构造函数私有化
+    MyCAS() {}
 
  private:
-  static MyCAS* m_instance;  //静态成员变量指针
+    static MyCAS* m_instance;  //静态成员变量指针
 
  public:
-  static MyCAS* getInstance() {
-    if (m_instance == NULL) {  //双重检查DCL
-      std::unique_lock<std::mutex> MyMutex(resource_mutex);
-      //这种写法效率低，因为我们只有在第一次调用的时候才会创建，其他并不会创建，所以两次判断可以解决
-      if (m_instance == NULL) {
-        m_instance = new MyCAS();
-        static ReleaseObject ro;
-      }
-    }
+    static MyCAS* getInstance() {
+        if (m_instance == NULL) {  //双重检查DCL
+            std::unique_lock<std::mutex> MyMutex(resource_mutex);
+            //这种写法效率低，因为我们只有在第一次调用的时候才会创建，其他并不会创建，所以两次判断可以解决
+            if (m_instance == NULL) {
+                m_instance = new MyCAS();
+                static ReleaseObject ro;
+            }
+        }
 
-    return m_instance;
-  }
-  //类中套一个类实现内存释放（好像没起作用）
-  class ReleaseObject {
-   public:
-    ~ReleaseObject() {
-      if (MyCAS::m_instance) {
-        cout << "销毁对象" << endl;
-        delete MyCAS::m_instance;
-        MyCAS::m_instance = NULL;
-      }
+        return m_instance;
     }
-  };
+    //类中套一个类实现内存释放（好像没起作用）
+    class ReleaseObject {
+     public:
+        ~ReleaseObject() {
+            if (MyCAS::m_instance) {
+                cout << "销毁对象" << endl;
+                delete MyCAS::m_instance;
+                MyCAS::m_instance = NULL;
+            }
+        }
+    };
 
-  void function() { cout << "测试函数" << endl; }
+    void function() {
+        cout << "测试函数" << endl;
+    }
 };
 //需要初始化静态成员变量
 MyCAS* MyCAS::m_instance = NULL;
 
 //线程入口函数
 void startThread() {
-  cout << "线程开始执行了" << endl;
-  MyCAS* p_a = MyCAS::getInstance();
-  cout << "线程执行完毕了" << endl;
-  return;
+    cout << "线程开始执行了" << endl;
+    MyCAS* p_a = MyCAS::getInstance();
+    cout << "线程执行完毕了" << endl;
+    return;
 }
 
 int main(void) {
-  //返回该类对象的指针
-  MyCAS* p_a = MyCAS::getInstance();
-  p_a->function();
+    //返回该类对象的指针
+    MyCAS* p_a = MyCAS::getInstance();
+    p_a->function();
 
-  //两个线程是同一个入口函数，所以这里会有两个流程或者两条通路同时执行startThread函数。
-  //当其中一个线程进入getInstance，但是还没有创建对象，切换到第二个线程，这样就可能创建多个对象
-  // m_instance == NULL不代表没被创建对象，可能马上就会创建，但是线程切换了
-  thread mythread1(startThread);
-  thread mythread2(startThread);
-  mythread1.join();
-  mythread2.join();
+    //两个线程是同一个入口函数，所以这里会有两个流程或者两条通路同时执行startThread函数。
+    //当其中一个线程进入getInstance，但是还没有创建对象，切换到第二个线程，这样就可能创建多个对象
+    // m_instance == NULL不代表没被创建对象，可能马上就会创建，但是线程切换了
+    thread mythread1(startThread);
+    thread mythread2(startThread);
+    mythread1.join();
+    mythread2.join();
 
-  system("pause");
-  return 0;
+    system("pause");
+    return 0;
 }
 /*
  * 设计模式大概谈

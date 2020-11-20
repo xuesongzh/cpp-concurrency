@@ -10,43 +10,43 @@ using namespace std;
  */
 class A {
  public:
-  int m_i;
-  //构造函数--类型转换构造函数，把一个整形转换为一个类A对象
-  A(int a) : m_i(a) {
-    cout << "A的构造函数执行" << endl;
-    cout << this << "thread id" << this_thread::get_id() << endl;
-  }
-  //拷贝构造函数
-  A(const A& m) : m_i(m.m_i) {
-    cout << "A的拷贝构造函数执行" << endl;
-    cout << this << "thread id" << this_thread::get_id() << endl;
-  }
-  ~A() {
-    cout << "A的析构函数执行" << std::endl;
-    cout << this << "thread id" << this_thread::get_id() << endl;
-  }
+    int m_i;
+    //构造函数--类型转换构造函数，把一个整形转换为一个类A对象
+    A(int a) : m_i(a) {
+        cout << "A的构造函数执行" << endl;
+        cout << this << "thread id" << this_thread::get_id() << endl;
+    }
+    //拷贝构造函数
+    A(const A& m) : m_i(m.m_i) {
+        cout << "A的拷贝构造函数执行" << endl;
+        cout << this << "thread id" << this_thread::get_id() << endl;
+    }
+    ~A() {
+        cout << "A的析构函数执行" << std::endl;
+        cout << this << "thread id" << this_thread::get_id() << endl;
+    }
 };
 
 void MyPrint(const A& pMyBuf) {
-  cout << "子线程的MyPrint的参数地址是:" << &pMyBuf << endl;
-  cout << "thread id" << this_thread::get_id() << endl;
+    cout << "子线程的MyPrint的参数地址是:" << &pMyBuf << endl;
+    cout << "thread id" << this_thread::get_id() << endl;
 }
 
 int main(void) {
-  int myVar = 10;
-  int mySecondVar = 20;
-  cout << "这是主函数的执行" << endl;
-  cout << "主线程id是：" << this_thread::get_id() << endl;
+    int myVar = 10;
+    int mySecondVar = 20;
+    cout << "这是主函数的执行" << endl;
+    cout << "主线程id是：" << this_thread::get_id() << endl;
 
-  // thread mythread(MyPrint, mySecondVar);
-  thread mythread(MyPrint, A(mySecondVar));
+    // thread mythread(MyPrint, mySecondVar);
+    thread mythread(MyPrint, A(mySecondVar));
 
-  //把一个整形对象MySecondVar传递给A类型对象的类型转换构造函数
-  mythread.join();
-  // mythread.detach();
+    //把一个整形对象MySecondVar传递给A类型对象的类型转换构造函数
+    mythread.join();
+    // mythread.detach();
 
-  system("pause");
-  return 0;
+    system("pause");
+    return 0;
 }
 
 /*

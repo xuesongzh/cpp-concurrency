@@ -18,36 +18,36 @@ using namespace std;
 //封装了一个类型为原子类型的int，可以像操作普通变量一样
 std::atomic<int> g_mycout = 0;
 void mythread1() {
-  for (int i = 0; i < 1000000; i++) {
-    g_mycout++;  //已经是一个atomic对象了，操作不会被打断
-  }
+    for (int i = 0; i < 1000000; i++) {
+        g_mycout++;  //已经是一个atomic对象了，操作不会被打断
+    }
 }
 
 //线程退出标记
 std::atomic<bool> isEnd = false;
 void mythread() {
-  chrono::milliseconds dura(1000);
-  std::this_thread::sleep_for(dura);
-  while (!isEnd) {
-    //线程没有退出，所以本线程可以做自己想做的事情
-    cout << "线程运行中" << endl;
-  }
+    chrono::milliseconds dura(1000);
+    std::this_thread::sleep_for(dura);
+    while (!isEnd) {
+        //线程没有退出，所以本线程可以做自己想做的事情
+        cout << "线程运行中" << endl;
+    }
 }
 
 int main(void) {
-  thread t1(mythread);
-  thread t2(mythread);
+    thread t1(mythread);
+    thread t2(mythread);
 
-  chrono::milliseconds dura(4000);
-  std::this_thread::sleep_for(dura);
-  // 使用原子操作，让线程自动结束
-  isEnd = true;
+    chrono::milliseconds dura(4000);
+    std::this_thread::sleep_for(dura);
+    // 使用原子操作，让线程自动结束
+    isEnd = true;
 
-  t1.join();
-  t2.join();
-  cout << "g_mycout=" << g_mycout << endl;
-  system("pause");
-  return 0;
+    t1.join();
+    t2.join();
+    cout << "g_mycout=" << g_mycout << endl;
+    system("pause");
+    return 0;
 }
 
 /*

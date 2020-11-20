@@ -4,9 +4,7 @@
 using namespace std;
 
 int main() {
-    thread t([] {
-        cout << "Hello World from lambda thread." << endl;
-    });
+    thread t([] { cout << "Hello World from lambda thread." << endl; });
 
     t.join();
 

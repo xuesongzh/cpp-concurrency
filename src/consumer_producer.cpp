@@ -9,15 +9,16 @@
 using namespace std;
 
 class Task {
-  public:
-    Task(int taskID) { this->taskID = taskID; }
-
-    void doTask() {
-        cout << "handle a task, taskID: " << taskID
-             << ", threadID: " << pthread_self() << endl;
+ public:
+    Task(int taskID) {
+        this->taskID = taskID;
     }
 
-  private:
+    void doTask() {
+        cout << "handle a task, taskID: " << taskID << ", threadID: " << pthread_self() << endl;
+    }
+
+ private:
     int taskID;
 };
 
@@ -60,8 +61,7 @@ void* producer_thread(void* param) {
 
         pthread_mutex_lock(&mymutex);
         tasks.push_back(pTask);
-        cout << "produce a task, taskID: " << taskID
-             << ", threadID: " << pthread_self() << endl;
+        cout << "produce a task, taskID: " << taskID << ", threadID: " << pthread_self() << endl;
 
         pthread_mutex_unlock(&mymutex);
 

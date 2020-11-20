@@ -5,34 +5,40 @@ using namespace std;
 
 class A {
  public:
-  int m_i;
-  //构造函数--类型转换构造函数，把一个整形转换为一个类A对象
-  A(int a) : m_i(a) { cout << "A的构造函数执行" << endl; }
+    int m_i;
+    //构造函数--类型转换构造函数，把一个整形转换为一个类A对象
+    A(int a) : m_i(a) {
+        cout << "A的构造函数执行" << endl;
+    }
 
-  //拷贝构造函数
-  A(const A& m) : m_i(m.m_i) { cout << "A的拷贝构造函数执行" << endl; }
+    //拷贝构造函数
+    A(const A& m) : m_i(m.m_i) {
+        cout << "A的拷贝构造函数执行" << endl;
+    }
 
-  ~A() { cout << "A的析构函数执行" << std::endl; }
+    ~A() {
+        cout << "A的析构函数执行" << std::endl;
+    }
 };
 
 void MyPrint(const int i, const A& pMyBuf) {
-  cout << &pMyBuf << endl;  //打印的是地址
-  return;
+    cout << &pMyBuf << endl;  //打印的是地址
+    return;
 }
 
 int main(void) {
-  int myVar = 10;
-  int mySecondVar = 20;
+    int myVar = 10;
+    int mySecondVar = 20;
 
-  // thread mythread(MyPrint, myVar, mySecondVar);
-  //把一个整形对象MySecondVar传递给A类型对象的类型转换构造函数
-  thread mythread(MyPrint, myVar, A(mySecondVar));
+    // thread mythread(MyPrint, myVar, mySecondVar);
+    //把一个整形对象MySecondVar传递给A类型对象的类型转换构造函数
+    thread mythread(MyPrint, myVar, A(mySecondVar));
 
-  // mythread.join();
-  mythread.detach();
-  cout << "这是主函数的执行" << endl;
-  system("pause");
-  return 0;
+    // mythread.join();
+    mythread.detach();
+    cout << "这是主函数的执行" << endl;
+    system("pause");
+    return 0;
 }
 /*
  * 当main()函数执行完毕，使用mySecondVar来构造一个类对象，这种写法有问题

@@ -5,24 +5,24 @@
 using namespace std;
 
 int mythread() {
-  cout << "线程开始执行,线程的id是：" << std::this_thread::get_id() << endl;
-  //休息5s
-  chrono::milliseconds dura(5000);
-  this_thread::sleep_for(dura);
+    cout << "线程开始执行,线程的id是：" << std::this_thread::get_id() << endl;
+    //休息5s
+    chrono::milliseconds dura(5000);
+    this_thread::sleep_for(dura);
 
-  return 5;
+    return 5;
 }
 int main(void) {
-  cout << "main thread id:" << std::this_thread::get_id() << endl;
-  std::future<int> result = std::async(mythread);
-  //自动创建一个线程，并启动线程入口函数
-  cout << "continue........" << endl;
-  int def = 0;
-  //卡在这里等待线程执行完毕，通过future对象的get()方法等待程序结束并得到返回结果
-  // get()只能调用一次
-  cout << "未来的执行结果是：" << result.get() << endl;
-  system("pause");
-  return 0;
+    cout << "main thread id:" << std::this_thread::get_id() << endl;
+    std::future<int> result = std::async(mythread);
+    //自动创建一个线程，并启动线程入口函数
+    cout << "continue........" << endl;
+    int def = 0;
+    //卡在这里等待线程执行完毕，通过future对象的get()方法等待程序结束并得到返回结果
+    // get()只能调用一次
+    cout << "未来的执行结果是：" << result.get() << endl;
+    system("pause");
+    return 0;
 }
 
 /*

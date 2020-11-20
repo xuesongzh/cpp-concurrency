@@ -10,80 +10,80 @@ using namespace std;
 
 class A {
  public:
-  //把收到的消息入到一个队列，子线程的启动函数
-  void inMsgRecvQueue() {
-    for (int i = 0; i < 10000; i++) {
-      cout << "inMsgQueue插入一个元素" << i << endl;
+    //把收到的消息入到一个队列，子线程的启动函数
+    void inMsgRecvQueue() {
+        for (int i = 0; i < 10000; i++) {
+            cout << "inMsgQueue插入一个元素" << i << endl;
 
-      mtx.lock();
-      msgRecvQueue.push_back(i);  //假设这个数字i就是收到的玩家的命令
-      mtx.unlock();
-    }
-  }
-
-  ////读共享数据函数的封装函数
-  // bool outMsgprocess(int&command)
-  //{
-  //	mtx.lock();
-  //	if (!msgRecvQueue.empty())
-  //	{
-  //		//消息队列不为空
-  //		int command = msgRecvQueue.front();//返回第一个元素
-  //		msgRecvQueue.pop_front();//移除第一个元素
-  //		mtx.unlock();
-  //		return true;
-  //	}
-  //	mtx.unlock();
-  //	return false;
-  //	//所有分支都要有unlock()，两个出口必须有两个unlock()
-  //
-  //}
-
-  //读共享数据函数的封装函数，使用lock_guard()
-  bool outMsgprocess(int& command) {
-    lock_guard<mutex> myguard(mtx);  // myguard是我们起的名字
-    // lock_guard的构造函数里面执行了lock()函数，当myguard局部变量析构的时候，执行unlock()函数。
-    if (!msgRecvQueue.empty()) {
-      //消息队列不为空
-      int command = msgRecvQueue.front();  //返回第一个元素
-      msgRecvQueue.pop_front();            //移除第一个元素
-      return true;
-    }
-    return false;
-  }
-
-  //把数据从消息队列中取出的子线程
-  void outMsgRecvQueue() {
-    int command = 0;
-    for (int i = 0; i < 10000; i++) {
-      bool result = outMsgprocess(command);
-      if (result) {
-        cout << "取消息函数执行成功" << command << endl;
-      } else {
-        cout << "消息队列中的消息为空" << i << endl;
-      }
+            mtx.lock();
+            msgRecvQueue.push_back(i);  //假设这个数字i就是收到的玩家的命令
+            mtx.unlock();
+        }
     }
 
-    cout << endl;
-  }
+    ////读共享数据函数的封装函数
+    // bool outMsgprocess(int&command)
+    //{
+    //	mtx.lock();
+    //	if (!msgRecvQueue.empty())
+    //	{
+    //		//消息队列不为空
+    //		int command = msgRecvQueue.front();//返回第一个元素
+    //		msgRecvQueue.pop_front();//移除第一个元素
+    //		mtx.unlock();
+    //		return true;
+    //	}
+    //	mtx.unlock();
+    //	return false;
+    //	//所有分支都要有unlock()，两个出口必须有两个unlock()
+    //
+    //}
+
+    //读共享数据函数的封装函数，使用lock_guard()
+    bool outMsgprocess(int& command) {
+        lock_guard<mutex> myguard(mtx);  // myguard是我们起的名字
+        // lock_guard的构造函数里面执行了lock()函数，当myguard局部变量析构的时候，执行unlock()函数。
+        if (!msgRecvQueue.empty()) {
+            //消息队列不为空
+            int command = msgRecvQueue.front();  //返回第一个元素
+            msgRecvQueue.pop_front();            //移除第一个元素
+            return true;
+        }
+        return false;
+    }
+
+    //把数据从消息队列中取出的子线程
+    void outMsgRecvQueue() {
+        int command = 0;
+        for (int i = 0; i < 10000; i++) {
+            bool result = outMsgprocess(command);
+            if (result) {
+                cout << "取消息函数执行成功" << command << endl;
+            } else {
+                cout << "消息队列中的消息为空" << i << endl;
+            }
+        }
+
+        cout << endl;
+    }
 
  private:
-  list<int> msgRecvQueue;  //容器用来存放玩家发送过来的命令
-  //创建一个互斥量的成员变量
-  mutex mtx;
+    list<int> msgRecvQueue;  //容器用来存放玩家发送过来的命令
+    //创建一个互斥量的成员变量
+    mutex mtx;
 };
 
 int main(void) {
-  A myobj;
-  //第二个是引用才能保证线程中用的是同一个对象
-  thread myOutMsgObj(&A::outMsgRecvQueue, &myobj);
-  thread myInMsObj(&A::inMsgRecvQueue, &myobj);
-  myOutMsgObj.join();
-  myInMsObj.join();
+    A myobj;
+    //第二个是引用才能保证线程中用的是同一个对象
+    thread myOutMsgObj(&A::outMsgRecvQueue, &myobj);
+    thread myInMsObj(&A::inMsgRecvQueue, &myobj);
+    myOutMsgObj.join();
+    myInMsObj.join();
 
-  cout << "main线程" << endl;  //最后执行这一句，整个线程退出
-  system("pause");
-  return 0;
+    cout << "main线程" << endl;  //最后执行这一句，整个线程退出
+    system("pause");
+    return 0;
 }
 
 /*

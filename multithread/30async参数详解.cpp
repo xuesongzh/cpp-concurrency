@@ -6,26 +6,25 @@
 using namespace std;
 
 int mythread() {
-  cout << "子线程id=" << std::this_thread::get_id() << endl;
-  return 1;
+    cout << "子线程id=" << std::this_thread::get_id() << endl;
+    return 1;
 }
 
 int main(void) {
-  cout << "main thread id =" << std::this_thread::get_id() << endl;
-  //创建一个异步任务
-  std::future<int> result = std::async(mythread);
-  std::future_status status =
-      result.wait_for(std::chrono::seconds(0));  //是否被立即执行了
-  if (status == std::future_status::ready) {
-    cout << "线程执行完毕" << endl;
-  } else if (status == std::future_status::deferred) {
-    cout << "线程被延迟调用" << endl;
-  } else if (status == std::future_status::timeout) {
-    cout << "线程超时间，还没有执行结束" << endl;
-  }
-  cout << result.get() << endl;
-  system("pause");
-  return 0;
+    cout << "main thread id =" << std::this_thread::get_id() << endl;
+    //创建一个异步任务
+    std::future<int> result = std::async(mythread);
+    std::future_status status = result.wait_for(std::chrono::seconds(0));  //是否被立即执行了
+    if (status == std::future_status::ready) {
+        cout << "线程执行完毕" << endl;
+    } else if (status == std::future_status::deferred) {
+        cout << "线程被延迟调用" << endl;
+    } else if (status == std::future_status::timeout) {
+        cout << "线程超时间，还没有执行结束" << endl;
+    }
+    cout << result.get() << endl;
+    system("pause");
+    return 0;
 }
 
 /*

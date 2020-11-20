@@ -5,31 +5,31 @@
 using namespace std;
 
 int mythread(int mypar) {
-  cout << "mpar=" << mypar << endl;
-  cout << "线程开始执行,线程的id是：" << std::this_thread::get_id() << endl;
-  //休息5s
-  chrono::milliseconds dura(5000);
-  this_thread::sleep_for(dura);
+    cout << "mpar=" << mypar << endl;
+    cout << "线程开始执行,线程的id是：" << std::this_thread::get_id() << endl;
+    //休息5s
+    chrono::milliseconds dura(5000);
+    this_thread::sleep_for(dura);
 
-  return 5;
+    return 5;
 }
 
 int main(void) {
-  cout << "主线程id=" << std::this_thread::get_id() << endl;
-  //返回值类型，参数类型--我们把函数mythread通packaged_task包装
-  std::packaged_task<int(int)> mpt(mythread);
-  std::thread t1(std::ref(mpt), 1);  // 1是传递的参数,创建一个线程，并开始执行
-  t1.join();
-  // packaged_task把线程函数包装了一层
+    cout << "主线程id=" << std::this_thread::get_id() << endl;
+    //返回值类型，参数类型--我们把函数mythread通packaged_task包装
+    std::packaged_task<int(int)> mpt(mythread);
+    std::thread t1(std::ref(mpt), 1);  // 1是传递的参数,创建一个线程，并开始执行
+    t1.join();
+    // packaged_task把线程函数包装了一层
 
-  //通过future获取未来函数执行的值
-  // std::future对象里面包含有线程入口函数的结果，result包含mythread的返回结
-  // get_future()是packaged_task()对象的接口
-  std::future<int> result = mpt.get_future();
-  cout << result.get() << endl;
+    //通过future获取未来函数执行的值
+    // std::future对象里面包含有线程入口函数的结果，result包含mythread的返回结
+    // get_future()是packaged_task()对象的接口
+    std::future<int> result = mpt.get_future();
+    cout << result.get() << endl;
 
-  system("pause");
-  return 0;
+    system("pause");
+    return 0;
 }
 
 /*

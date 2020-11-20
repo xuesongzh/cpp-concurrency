@@ -7,44 +7,44 @@ using namespace std;
 
 class A {
  public:
-  mutable int m_i;  // m_i的值是可以修改的，即使在const中
-  //构造函数--类型转换构造函数，把一个整形转换为一个类A对象
-  A(int a) : m_i(a) {
-    cout << "A的构造函数执行" << endl;
-    cout << this << "thread id" << this_thread::get_id() << endl;
-  }
-  //拷贝构造函数
-  A(const A& m) : m_i(m.m_i) {
-    cout << "A的拷贝构造函数执行" << endl;
-    cout << this << "thread id" << this_thread::get_id() << endl;
-  }
-  ~A() {
-    cout << "A的析构函数执行" << std::endl;
-    cout << this << "thread id" << this_thread::get_id() << endl;
-  }
+    mutable int m_i;  // m_i的值是可以修改的，即使在const中
+    //构造函数--类型转换构造函数，把一个整形转换为一个类A对象
+    A(int a) : m_i(a) {
+        cout << "A的构造函数执行" << endl;
+        cout << this << "thread id" << this_thread::get_id() << endl;
+    }
+    //拷贝构造函数
+    A(const A& m) : m_i(m.m_i) {
+        cout << "A的拷贝构造函数执行" << endl;
+        cout << this << "thread id" << this_thread::get_id() << endl;
+    }
+    ~A() {
+        cout << "A的析构函数执行" << std::endl;
+        cout << this << "thread id" << this_thread::get_id() << endl;
+    }
 };
 
 void MyPrint(const A& pMyBuf) {
-  pMyBuf.m_i = 3333;  //我们修改这个值，不会影响到主线程中的值
-  cout << "子线程的MyPrint的参数地址是:" << &pMyBuf << endl;
-  cout << "thread is:" << this_thread::get_id() << endl;
+    pMyBuf.m_i = 3333;  //我们修改这个值，不会影响到主线程中的值
+    cout << "子线程的MyPrint的参数地址是:" << &pMyBuf << endl;
+    cout << "thread is:" << this_thread::get_id() << endl;
 }
 
 //传递一个智能指针
 void MyPrint2(unique_ptr<int> pint) {
-  cout << "子线程thread id is:" << this_thread::get_id() << endl;
+    cout << "子线程thread id is:" << this_thread::get_id() << endl;
 }
 
 int main(void) {
-  A myobj(10);
-  // thread mythread(MyPrint,myobj);//将类对象作为线程的参数
-  thread mythread(MyPrint, ref(myobj));  //将类对象作为线程的参数
+    A myobj(10);
+    // thread mythread(MyPrint,myobj);//将类对象作为线程的参数
+    thread mythread(MyPrint, ref(myobj));  //将类对象作为线程的参数
 
-  mythread.join();
-  // mythread.detach();
+    mythread.join();
+    // mythread.detach();
 
-  system("pause");
-  return 0;
+    system("pause");
+    return 0;
 }
 
 /*

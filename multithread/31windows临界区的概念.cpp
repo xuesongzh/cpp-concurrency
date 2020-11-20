@@ -15,114 +15,116 @@ using namespace std;
 //这种类被称为RAII类（resource acquisition is initialation）
 class CwinLock {
  public:
-  //构造函数
-  CwinLock(CRITICAL_SECTION *pCritem) {
-    m_pCritical = pCritem;
-    EnterCriticalSection(m_pCritical);
-  }
-  //析构函数
-  ~CwinLock() { LeaveCriticalSection(m_pCritical); }
+    //构造函数
+    CwinLock(CRITICAL_SECTION *pCritem) {
+        m_pCritical = pCritem;
+        EnterCriticalSection(m_pCritical);
+    }
+    //析构函数
+    ~CwinLock() {
+        LeaveCriticalSection(m_pCritical);
+    }
 
  private:
-  CRITICAL_SECTION *m_pCritical;
+    CRITICAL_SECTION *m_pCritical;
 };
 
 class A {
  public:
-  //把收到的消息入到一个队列，子线程的启动函数
-  void inMsgRecvQueue() {
-    for (int i = 0; i < 10000; i++) {
-      cout << "inMsgQueue插入一个元素" << i << endl;
+    //把收到的消息入到一个队列，子线程的启动函数
+    void inMsgRecvQueue() {
+        for (int i = 0; i < 10000; i++) {
+            cout << "inMsgQueue插入一个元素" << i << endl;
 #ifdef __WINDOWS
-      //进入临界区
-      // EnterCriticalSection(&winsec);
-      // msgRecvQueue.push_back(i);//执行操作
-      // LeaveCriticalSection(&winsec);//离开临界区
+            //进入临界区
+            // EnterCriticalSection(&winsec);
+            // msgRecvQueue.push_back(i);//执行操作
+            // LeaveCriticalSection(&winsec);//离开临界区
 
-      CwinLock wlock(&winsec);    //调用多次不会出错
-      msgRecvQueue.push_back(i);  //执行操作
+            CwinLock wlock(&winsec);    //调用多次不会出错
+            msgRecvQueue.push_back(i);  //执行操作
 #else
-      std::lock_guard<mutex> lock(mtx1);
-      msgRecvQueue.push_back(i);  //假设这个数字i就是收到的玩家的命令
+            std::lock_guard<mutex> lock(mtx1);
+            msgRecvQueue.push_back(i);  //假设这个数字i就是收到的玩家的命令
+#endif
+        }
+    }
+
+    //读共享数据函数的封装函数，使用lock_guard()
+    bool outMsgprocess(int &command) {
+#ifdef __WINDOWS
+        EnterCriticalSection(&winsec);
+
+        if (!msgRecvQueue.empty()) {
+            //消息队列不为空
+            command = msgRecvQueue.front();  //返回第一个元素
+            msgRecvQueue.pop_front();        //移除第一个元素
+            LeaveCriticalSection(&winsec);
+            return true;
+        }
+        LeaveCriticalSection(&winsec);
+        return false;
+#else
+
+        mtx1.lock();
+        if (!msgRecvQueue.empty()) {
+            //消息队列不为空
+            command = msgRecvQueue.front();  //返回第一个元素
+            msgRecvQueue.pop_front();        //移除第一个元素
+            mtx1.unlock();
+            return true;
+        }
+        mtx1.unlock();
+        return false;
+        //所有分支都要有unlock()，两个出口必须有两个unlock()
 #endif
     }
-  }
+    //把数据从消息队列中取出的子线程
+    void outMsgRecvQueue() {
+        int command = 0;
+        for (int i = 0; i < 10000; i++) {
+            bool result = outMsgprocess(command);
+            if (result == true) {
+                cout << "取消息函数执行成功" << command << endl;
+            } else {
+                cout << "消息队列中的消息为空" << i << endl;
+            }
+        }
 
-  //读共享数据函数的封装函数，使用lock_guard()
-  bool outMsgprocess(int &command) {
+        cout << endl;
+    }
+
+    //定义一个widows临界区变量
 #ifdef __WINDOWS
-    EnterCriticalSection(&winsec);
-
-    if (!msgRecvQueue.empty()) {
-      //消息队列不为空
-      command = msgRecvQueue.front();  //返回第一个元素
-      msgRecvQueue.pop_front();        //移除第一个元素
-      LeaveCriticalSection(&winsec);
-      return true;
+    A() {
+        //初始化临界区,用之前必须初始化
+        InitializeCriticalSection(&winsec);
     }
-    LeaveCriticalSection(&winsec);
-    return false;
-#else
-
-    mtx1.lock();
-    if (!msgRecvQueue.empty()) {
-      //消息队列不为空
-      command = msgRecvQueue.front();  //返回第一个元素
-      msgRecvQueue.pop_front();        //移除第一个元素
-      mtx1.unlock();
-      return true;
-    }
-    mtx1.unlock();
-    return false;
-    //所有分支都要有unlock()，两个出口必须有两个unlock()
-#endif
-  }
-  //把数据从消息队列中取出的子线程
-  void outMsgRecvQueue() {
-    int command = 0;
-    for (int i = 0; i < 10000; i++) {
-      bool result = outMsgprocess(command);
-      if (result == true) {
-        cout << "取消息函数执行成功" << command << endl;
-      } else {
-        cout << "消息队列中的消息为空" << i << endl;
-      }
-    }
-
-    cout << endl;
-  }
-
-  //定义一个widows临界区变量
-#ifdef __WINDOWS
-  A() {
-    //初始化临界区,用之前必须初始化
-    InitializeCriticalSection(&winsec);
-  }
 #endif
  private:
-  list<int> msgRecvQueue;  //容器用来存放玩家发送过来的命令
-  //创建一个互斥量的成员变量
-  mutex mtx1;
-  //定义一个递归互斥量--没有使用
-  recursive_mutex mtx2;
+    list<int> msgRecvQueue;  //容器用来存放玩家发送过来的命令
+    //创建一个互斥量的成员变量
+    mutex mtx1;
+    //定义一个递归互斥量--没有使用
+    recursive_mutex mtx2;
 
-  //定义一个widows临界区变量
+    //定义一个widows临界区变量
 #ifdef __WINDOWS
-  CRITICAL_SECTION winsec;
+    CRITICAL_SECTION winsec;
 #endif
 };
 
 int main(void) {
-  A myobj;
-  //第二个是引用才能保证线程中用的是统一个对象
-  thread myOutMsgObj(&A::outMsgRecvQueue, &myobj);
-  thread myInMsObj(&A::inMsgRecvQueue, &myobj);
-  myOutMsgObj.join();
-  myInMsObj.join();
+    A myobj;
+    //第二个是引用才能保证线程中用的是统一个对象
+    thread myOutMsgObj(&A::outMsgRecvQueue, &myobj);
+    thread myInMsObj(&A::inMsgRecvQueue, &myobj);
+    myOutMsgObj.join();
+    myInMsObj.join();
 
-  cout << "main线程" << endl;  //最后执行这一句，整个线程退出
-  system("pause");
-  return 0;
+    cout << "main线程" << endl;  //最后执行这一句，整个线程退出
+    system("pause");
+    return 0;
 }
 
 /*

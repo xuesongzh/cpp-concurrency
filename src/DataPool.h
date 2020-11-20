@@ -21,7 +21,7 @@ using std::vector;
 
 template <typename T>
 class DataPool {
-  public:
+ public:
     DataPool(int count, char *name);
     ~DataPool();
 
@@ -32,10 +32,10 @@ class DataPool {
     int getPoolSize();
     void clearPool();
 
-  private:
+ private:
     void freeData();
 
-  private:
+ private:
     queue<T *> dataQueue;
 
     // 池子大小
@@ -69,8 +69,7 @@ int DataPool<T>::putData(T *data) {
             freeData();
         }
         dataQueue.push(data);
-        cout << "Add one data into the " << this->name << " Queue, Queue size is "
-             << dataQueue.size() << endl;
+        cout << "Add one data into the " << this->name << " Queue, Queue size is " << dataQueue.size() << endl;
         t1 = steady_clock::now();
     }
     cv.notify_one();
@@ -91,8 +90,7 @@ T *DataPool<T>::getData() {
     auto time_diff = t2 - t1;
     auto duration = duration_cast<microseconds>(time_diff);
     cout << this->name << " time consuming :" << duration.count() << "us" << endl;
-    cout << "Get one data from the " << this->name << " Queue, Queue size is "
-         << dataQueue.size() << endl;
+    cout << "Get one data from the " << this->name << " Queue, Queue size is " << dataQueue.size() << endl;
     return data;
 }
 

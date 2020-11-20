@@ -27,19 +27,20 @@ class threadpool {
     atomic<bool> _run{true};        //线程池是否执行
     atomic<int> _idlThrNum{0};      //空闲线程数量
 
-  public:
-    inline threadpool(unsigned short size = 4) { addThread(size); }
+ public:
+    inline threadpool(unsigned short size = 4) {
+        addThread(size);
+    }
     inline ~threadpool() {
         _run = false;
         _task_cv.notify_all();  // 唤醒所有线程执行
         for (thread& thread : _pool) {
             // thread.detach(); // 让线程“自生自灭”
-            if (thread.joinable())
-                thread.join();  // 等待任务结束， 前提：线程一定会执行完
+            if (thread.joinable()) thread.join();  // 等待任务结束， 前提：线程一定会执行完
         }
     }
 
-  public:
+ public:
     // 提交一个任务
     // 调用.get()获取返回值会等待任务执行完,获取返回值
     // 有两种方法可以实现调用类成员，
@@ -50,17 +51,15 @@ class threadpool {
         if (!_run)  // stoped ??
             throw runtime_error("commit on ThreadPool is stopped.");
 
-        using RetType =
-            decltype(f(args...));  // typename std::result_of<F(Args...)>::type,
-                                   // 函数 f 的返回值类型
-        auto task = make_shared<packaged_task<RetType()>>(bind(
-            forward<F>(f), forward<Args>(args)...));  // 把函数入口及参数,打包(绑定)
+        using RetType = decltype(f(args...));  // typename std::result_of<F(Args...)>::type,
+                                               // 函数 f 的返回值类型
+        auto task = make_shared<packaged_task<RetType()>>(
+            bind(forward<F>(f), forward<Args>(args)...));  // 把函数入口及参数,打包(绑定)
         future<RetType> future = task->get_future();
-        {  // 添加任务到队列
-            lock_guard<mutex> lock{
-                _lock};                //对当前块的语句加锁  lock_guard 是 mutex 的 stack
-                                       //封装类，构造的时候 lock()，析构的时候 unlock()
-            _tasks.emplace([task]() {  // push(Task{...}) 放到队列后面
+        {                                   // 添加任务到队列
+            lock_guard<mutex> lock{_lock};  //对当前块的语句加锁  lock_guard 是 mutex 的 stack
+                                            //封装类，构造的时候 lock()，析构的时候 unlock()
+            _tasks.emplace([task]() {       // push(Task{...}) 放到队列后面
                 (*task)();
             });
         }
@@ -73,11 +72,15 @@ class threadpool {
     }
 
     //空闲线程数量
-    int idlCount() { return _idlThrNum; }
+    int idlCount() {
+        return _idlThrNum;
+    }
     //线程数量
-    int thrCount() { return _pool.size(); }
+    int thrCount() {
+        return _pool.size();
+    }
 #ifndef THREADPOOL_AUTO_GROW
-  private:
+ private:
 #endif  // !THREADPOOL_AUTO_GROW \
         //添加指定数量的线程
     void addThread(unsigned short size) {
@@ -89,9 +92,7 @@ class threadpool {
                     {
                         // unique_lock 相比 lock_guard 的好处是：可以随时 unlock() 和 lock()
                         unique_lock<mutex> lock{_lock};
-                        _task_cv.wait(lock, [this] {
-                            return !_run || !_tasks.empty();
-                        });  // wait 直到有 task
+                        _task_cv.wait(lock, [this] { return !_run || !_tasks.empty(); });  // wait 直到有 task
                         if (!_run && _tasks.empty()) return;
                         task = move(_tasks.front());  // 按先进先出从队列取一个 task
                         _tasks.pop();
