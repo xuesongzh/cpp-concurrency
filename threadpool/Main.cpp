@@ -1,8 +1,6 @@
-#include <windows.h>
-
 #include <iostream>
 
-#include "threadpool.h"
+#include "ThreadPool.h"
 
 void fun1(int slp) {
     printf("  hello, fun1 !  %d\n", std::this_thread::get_id());
@@ -35,7 +33,7 @@ class A {  //函数必须是 static 的才能使用线程池
 };
 
 int main() try {
-    std::threadpool executor{50};
+    ThreadPool executor{50};
     A a;
     std::future<void> ff = executor.commit(fun1, 0);
     std::future<int> fg = executor.commit(gfun{}, 0);
@@ -52,8 +50,8 @@ int main() try {
     for (int i = 0; i < 50; i++) {
         executor.commit(fun1, i * 100);
     }
-    std::cout << " =======  commit all ========= " << std::this_thread::get_id() << " idlsize=" << executor.idlCount()
-              << std::endl;
+    std::cout << " =======  commit all ========= " << std::this_thread::get_id()
+              << " idlsize=" << executor.getIdleCount() << std::endl;
 
     std::cout << " =======  sleep ========= " << std::this_thread::get_id() << std::endl;
     std::this_thread::sleep_for(std::chrono::seconds(3));
@@ -69,7 +67,7 @@ int main() try {
 
     std::cout << "end... " << std::this_thread::get_id() << std::endl;
 
-    std::threadpool pool(4);
+    ThreadPool pool(4);
     std::vector<std::future<int> > results;
 
     for (int i = 0; i < 8; ++i) {
@@ -77,7 +75,7 @@ int main() try {
             std::cout << "hello " << i << std::endl;
             std::this_thread::sleep_for(std::chrono::seconds(1));
             std::cout << "world " << i << std::endl;
-            return i * i;
+            return i + 100;
         }));
     }
     std::cout << " =======  commit all2 ========= " << std::this_thread::get_id() << std::endl;
