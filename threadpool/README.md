@@ -1,5 +1,5 @@
 # threadpool
-based on C++11 , a mini `threadpool` , accept variable number of parameters.
+based on C++11 , a mini threadpool, accept variable number of parameters.
 基于C++11的线程池,简洁且可以带任意多的参数
 
 管理一个任务队列，一个线程队列，然后每次取一个任务分配给一个线程去做，循环往复。
@@ -7,15 +7,14 @@ based on C++11 , a mini `threadpool` , accept variable number of parameters.
 
 线程池,可以提交变参函数或拉姆达表达式的匿名函数执行,可以获取执行返回值
 
-代码不多,**上百行代码就完成了 线程池**, 并且, 看看 `commit`,  哈,  不是固定参数的, 无参数数量限制!  这得益于可变参数模板.
+代码不多,上百行代码就完成了线程池, 不是固定参数的, 无参数数量限制!  这得益于可变参数模板.
 
+特别是[这个线程池实现](https://github.com/progschj/ThreadPool)(基本 copy 了这个实现,加上[这位同学的实现](http://blog.csdn.net/zdarks/article/details/46994607)和解释，好东西值得 copy ! 
 
+**然后综合更改了下,更加简洁**。
 
-*为了避嫌，先进行一下版权说明：代码是 me “写”的，但是思路来自 Internet， 特别是[这个线程池实现](https://github.com/progschj/ThreadPool)(基本 copy 了这个实现,加上[这位同学的实现](http://blog.csdn.net/zdarks/article/details/46994607)和解释，好东西值得 copy ! * 
-**然后综合更改了下,更加简洁**
-*)。*
+### C++11语言细节
 
-##C++11语言细节
 即使懂原理也不代表能写出程序，上面用了众多c++11的“奇技淫巧”，下面简单描述之。
 
 1. using Task = function<void()> 是类型别名，简化了 typedef 的用法。function<void()> 可以认为是一个函数类型，接受任意原型是 void() 的函数，或是函数对象，或是匿名函数。void() 意思是不带参数，没有返回值。
