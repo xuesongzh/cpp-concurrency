@@ -35,8 +35,10 @@ class ThreadPool {
     inline ~ThreadPool() {
         stop_ = true;
         cv_.notify_all();  // 唤醒所有线程执行
-        for (auto &t : pool_) {
-            t.join();  // 等待任务结束， 前提：线程一定会执行完
+        for (auto& t : pool_) {
+            if (t.joinable()) {
+                t.join();  // 等待任务结束， 前提：线程一定会执行完
+            }
         }
     }
 
@@ -44,12 +46,13 @@ class ThreadPool {
     // 提交一个任务
     // 调用get()会等待任务执行完，获取返回值
     // 有两种方法可以实现调用类成员，
-    // 一种是使用   bind： .commit(std::bind(&Dog::sayHello, &dog));
-    // 一种是用   mem_fn： .commit(std::mem_fn(&Dog::sayHello), this)
-    template <class F, class... Args>
-    auto commit(F &&f, Args &&... args) -> future<decltype(f(args...))> {
-        if (stop_)  // stoped ??
-            throw runtime_error("commit on ThreadPool is stopped.");
+    // 一种是使用   bind： .submit(std::bind(&Dog::sayHello, &dog));
+    // 一种是用   mem_fn： .submit(std::mem_fn(&Dog::sayHello), this)
+    template <typename F, typename... Args>
+    auto submit(F&& f, Args&&... args) -> future<decltype(f(args...))> {
+        if (stop_) {
+            throw runtime_error("submit on ThreadPool is stopped.");
+        }
 
         using RetType = decltype(f(args...));  // typename std::result_of<F(Args...)>::type,
                                                // 函数 f 的返回值类型
